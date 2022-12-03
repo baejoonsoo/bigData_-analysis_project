@@ -79,7 +79,7 @@ end_year = 1980
 #
 #     genre_table = {}
 
-year = 2018
+year = 2021
 
 get_one_year_top_id(year)
 save_json(year)
