@@ -1,7 +1,7 @@
+import re
 from bs4 import BeautifulSoup as bs
 import requests
 import json
-
 
 header = {
     'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/16.1 Safari/605.1.15',
@@ -15,6 +15,7 @@ count = 1
 
 singer_score_table = {}
 
+
 def format_age(year):
     return year // 10 * 10
 
@@ -23,25 +24,29 @@ def make_url(year):
     age = format_age(year)
     return fr'https://www.melon.com/chart/search/list.htm?chartType=YE&age={age}&year={year}&classCd=KPOP&moved=Y'
 
-def save_singer_score(singer):
+
+def save_singer_score(singers):
     global count
     new_score = 101 - count
 
-    if singer in singer_score_table:
-        singer_score_table[singer] += new_score
-    else:
-        singer_score_table[singer] = new_score
+    for singer in singers.split(','):
+        singer = singer.strip()
+        if singer in singer_score_table:
+            singer_score_table[singer] += new_score
+        else:
+            singer_score_table[singer] = new_score
 
 
-def get_song_singer(id):
+def get_song_singer(song_id):
     global count
-    song_detail_page = requests.get(song_detail_url + str(id), headers=header)
+    song_detail_page = requests.get(song_detail_url + str(song_id), headers=header)
     entry = bs(song_detail_page.text, "lxml").find('body').select_one("div.entry")
-    artist = entry.select_one("div.info > div.artist > a > span").text
+    artist = entry.select_one("div.info > div.artist").text
 
-    save_singer_score(artist)
+    formatted_artist_name = re.sub("\(.+\)", "", artist).strip()
+    save_singer_score(formatted_artist_name)
 
-    print(artist)
+    print(formatted_artist_name)
 
     print(f'{count}/{top_num}')
     print('------------------------------------')
@@ -57,6 +62,7 @@ def get_one_year_top_id(year):
         print(year, song_id)
         get_song_singer(song_id)
 
+
 def save_json(year):
     age = format_age(year)
 
@@ -69,9 +75,10 @@ def save_json(year):
         json.dump(json_object, f, indent=2, ensure_ascii=False)
 
 
-targetYear = 1988
-
-get_one_year_top_id(targetYear)
-save_json(targetYear)
+for targetYear in range(2011 + 1, 2022):
+    count = 1
+    singer_score_table = {}
+    get_one_year_top_id(targetYear)
+    save_json(targetYear)
 
 print(singer_score_table)
