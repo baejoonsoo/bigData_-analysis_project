@@ -19,20 +19,24 @@ def get_genre(age):
     obj_keys = []
     obj_values = []
     all_value = sum(new_obj_table.values())
-    for key, value in new_obj_table.items():
+    etc_genre_value = 0
 
+    for key, value in new_obj_table.items():
         t = (value/all_value)*100
-        if t > 0.6:
+        if t > 3:
             obj_keys.append(key)
             obj_values.append(value)
-
+        else:
+            etc_genre_value += value
+    obj_keys.append("기타")
+    obj_values.append(etc_genre_value)
     return [obj_keys, obj_values]
 
 
 f, axes = plt.subplots(3, 2)
 f.set_size_inches((12, 18))
 plt.rc('font', family='AppleGothic')
-f.suptitle('시대별 장르 점유도', fontsize = 15)
+f.suptitle('시대별 장르 점유도', fontsize=15)
 
 for i in range(3):
     for j in range(2):
